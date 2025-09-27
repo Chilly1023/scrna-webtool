@@ -1,4 +1,4 @@
-# 🧬 scRNA-seq Analysis Webtool
+# scRNA-seq Analysis Webtool
 
 This project is part of my **PhD coursework**, where I am developing an interactive [Streamlit](https://streamlit.io/) app for processing **single-cell RNA-seq (scRNA-seq) data**.
 
@@ -8,13 +8,13 @@ The tool is inspired by workflows from the [Seurat PBMC3k tutorial](https://sati
 
 ---
 
-## 🚀 Try it out
+## Try it out
 👉 [Launch the webtool here](https://yirongdai-scrna-webtool-home-j2ukrh.streamlit.app/)  
 *(replace with your actual Streamlit link after deployment)*
 
 ---
 
-## 📂 Data Input Options
+## Data Input Options
 
 You can start analysis in three ways:
 
@@ -35,7 +35,7 @@ You can start analysis in three ways:
 
 ---
 
-## 🧪 Workflow
+## Workflow
 
 The app guides you through the following steps:
 
@@ -50,7 +50,7 @@ The app guides you through the following steps:
 
 ---
 
-## 🛠️ Installation (Local Development)
+## Installation (Local Development)
 
 Clone the repo and install dependencies:
 
