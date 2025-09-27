@@ -108,7 +108,7 @@ if st.button("Run Scaling", key="scale"):
 
     with open(tmp_path, "rb") as f:
         st.download_button(
-            label="⬇️ Download HVG-only normalized & scaled data (.h5ad)",
+            label="💾 Download HVG-only normalized & scaled data (.h5ad)",
             data=f,
             file_name="adata_HVG_scaled.h5ad",
             mime="application/octet-stream",
@@ -134,7 +134,7 @@ if st.button("Run Scaling", key="scale"):
 
     with open(tmp_path_csv, "rb") as f:
         st.download_button(
-            label="⬇️ Download HVG-only expression matrix (.csv)",
+            label="💾 Download HVG-only expression matrix (.csv)",
             data=f,
             file_name="expression_matrix_HVG_scaled.csv",
             mime="text/csv",
