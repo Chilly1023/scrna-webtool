@@ -94,7 +94,7 @@ if st.button("Run Scaling", key="scale"):
     adata = adata[:, adata.var["highly_variable"]].copy()
     sc.pp.scale(adata, max_value=10)
 
-    st.success("Scaled highly variable genes to unit variance and mean 0 (values clipped at 10).")
+    st.success("Scaled highly variable genes to unit variance and mean 0.")
 
 
 
