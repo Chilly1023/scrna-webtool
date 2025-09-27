@@ -1,7 +1,6 @@
 import streamlit as st
 import scanpy as sc
 import matplotlib.pyplot as plt
-import pandas as pd
 import tempfile, os
 
 st.header("Step 3: Normalisation, Feature Selection, and Scaling")
@@ -24,7 +23,11 @@ scale_factor = st.number_input(
 if st.button("Run Normalisation", key="normalize"):
     sc.pp.normalize_total(adata, target_sum=scale_factor)
     sc.pp.log1p(adata)
-    st.success(f"Normalized each cell to {scale_factor} counts and log-transformed the data.")
+
+    # Save log-normalized data as .raw for downstream DE / CellTypist
+    adata.raw = adata.copy()
+
+    st.success(f"✅ Normalized each cell to {scale_factor} counts and log-transformed.")
     st.session_state["adata"] = adata
     st.session_state["normalized"] = True
 
@@ -47,7 +50,7 @@ if st.button("Identify HVGs", key="hvg"):
     )
     st.session_state["adata"] = adata
     st.session_state["hvg_done"] = True
-    st.success(f"Data already normalized to {scale_factor} counts per cell and log-transformed.")
+    st.success(f"✅ Identified top {n_top_genes} highly variable genes.")
 
 # --- Show HVG plots if done ---
 if st.session_state.get("hvg_done", False):
@@ -86,61 +89,29 @@ if st.session_state.get("hvg_done", False):
 
     st.pyplot(fig)
 
-# --- Scaling (only HVGs) ---
-st.subheader("Scaling (HVGs only)")
+# --- Scaling (all genes) ---
+st.subheader("Scaling")
 
 if st.button("Run Scaling", key="scale"):
-    # Subset to HVGs only
-    adata = adata[:, adata.var["highly_variable"]].copy()
+    # Scale ALL genes (HVGs are still flagged for PCA/clustering)
     sc.pp.scale(adata, max_value=10)
 
-    st.success("Scaled highly variable genes to unit variance and mean 0.")
-
-
+    st.success("✅ Scaled all genes to unit variance and mean 0.")
+               
 
     st.session_state["adata"] = adata
-    st.session_state["scaled"] = True
 
-    # --- Download normalized & scaled HVG AnnData ---
+    # --- Download scaled AnnData ---
     with tempfile.NamedTemporaryFile(delete=False, suffix=".h5ad") as tmp:
         adata.write(tmp.name)
         tmp_path = tmp.name
 
     with open(tmp_path, "rb") as f:
         st.download_button(
-            label="💾 Download HVG-only normalized & scaled data (.h5ad)",
+            label="💾 Download normalized & scaled data (.h5ad)",
             data=f,
-            file_name="adata_HVG_scaled.h5ad",
+            file_name="adata_scaled.h5ad",
             mime="application/octet-stream",
             key="download_scaled"
         )
     os.remove(tmp_path)
-
-    # placeholder for "please wait"
-    wait_placeholder = st.empty()
-    wait_placeholder.info("⏳ Please wait a moment to generate the expression matrix .csv files for download...")
-
-    # --- Download expression matrix (cells × HVGs) as CSV ---
-    import pandas as pd
-    df = pd.DataFrame(
-        adata.X.toarray() if hasattr(adata.X, "toarray") else adata.X,
-        index=adata.obs_names,
-        columns=adata.var_names
-    )
-
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp_csv:
-        df.to_csv(tmp_csv.name)
-        tmp_path_csv = tmp_csv.name
-
-    with open(tmp_path_csv, "rb") as f:
-        st.download_button(
-            label="💾 Download HVG-only expression matrix (.csv)",
-            data=f,
-            file_name="expression_matrix_HVG_scaled.csv",
-            mime="text/csv",
-            key="download_csv"
-        )
-    os.remove(tmp_path_csv)
-
-    # ✅ clear the "please wait" message once downloads are available
-    wait_placeholder.empty()
