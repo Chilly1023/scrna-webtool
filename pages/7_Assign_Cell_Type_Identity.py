@@ -76,7 +76,12 @@ try:
         )
 
         # Add results back into current AnnData
-        adata.obs["predicted_labels"] = prediction.adata.obs["predicted_labels"]
+        if hasattr(prediction, "predicted_labels"): 
+            adata.obs["predicted_labels"] = prediction.predicted_labels
+            
+        else:
+            # Fallback if your CellTypist version still uses .adata
+            adata.obs["predicted_labels"] = prediction.adata.obs["predicted_labels"]
 
         st.success(f"✅ CellTypist annotation complete using {model_choice}")
         st.session_state["adata"] = adata
