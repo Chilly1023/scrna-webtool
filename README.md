@@ -2,7 +2,11 @@
 
 This project is part of my **PhD coursework**, where I am developing an interactive [Streamlit](https://streamlit.io/) app for processing **single-cell RNA-seq (scRNA-seq) data**.
 
-The tool is inspired by workflows from the [Seurat PBMC3k tutorial](https://satijalab.org/seurat/articles/pbmc3k_tutorial) from satijalab and allows users to perform essential scRNA-seq analysis **step by step** through a simple web interface.
+The tool is inspired by workflows from:  
+- [Seurat PBMC3k tutorial](https://satijalab.org/seurat/articles/pbmc3k_tutorial) from Satija Lab  
+- [Scanpy PBMC3k tutorial](https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html#preprocessing)  
+
+It allows users to perform essential scRNA-seq analysis **step by step** through a simple web interface.
 
 > This project was created with the help of **ChatGPT-5** (OpenAI), for guidance on code structure, deployment, and documentation.
 
