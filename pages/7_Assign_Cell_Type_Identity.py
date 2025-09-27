@@ -36,19 +36,27 @@ selected_genes = st.multiselect(
 )
 
 if st.button("Plot UMAP with selected genes"):
-    st.session_state["last_selected_genes"] = selected_genes  # store in session
+    st.session_state["last_selected_genes"] = selected_genes
     st.session_state["show_gene_umaps"] = True
 
 # Always replot if previously requested
 if st.session_state.get("show_gene_umaps", False) and st.session_state.get("last_selected_genes"):
     colors = ["leiden"] + st.session_state["last_selected_genes"]
-    sc.pl.umap(adata, color=colors, show=False, use_raw=False)
-    fig = plt.gcf()
-    st.pyplot(fig)
-    plt.close(fig)
+
+    # Show plots 2 per row
+    for i in range(0, len(colors), 2):
+        cols = st.columns(2)
+        for j in range(2):
+            if i + j < len(colors):
+                gene = colors[i + j]
+                with cols[j]:
+                    sc.pl.umap(adata, color=gene, show=False, use_raw=False)
+                    fig = plt.gcf()
+                    st.pyplot(fig)
+                    plt.close(fig)
 
 # ======================
-# Part 2: Cell Typist
+# Part 2: CellTypist
 # ======================
 st.subheader("Cell Type Annotation with CellTypist")
 
@@ -75,13 +83,23 @@ try:
             majority_voting=True
         )
 
-        # Add results back into current AnnData
-        if hasattr(prediction, "predicted_labels"): 
-            adata.obs["predicted_labels"] = prediction.predicted_labels
-            
-        else:
-            # Fallback if your CellTypist version still uses .adata
+        # --- Handle CellTypist outputs safely ---
+        if hasattr(prediction, "predicted_labels"):
+            labels_df = prediction.predicted_labels
+            if isinstance(labels_df, pd.DataFrame):
+                if "majority_voting" in labels_df.columns:
+                    adata.obs["predicted_labels"] = labels_df["majority_voting"]
+                else:
+                    adata.obs["predicted_labels"] = labels_df.iloc[:, 0]
+            else:
+                adata.obs["predicted_labels"] = labels_df
+        elif "predicted_labels" in prediction.adata.obs:
             adata.obs["predicted_labels"] = prediction.adata.obs["predicted_labels"]
+        elif "majority_voting" in prediction.adata.obs:
+            adata.obs["predicted_labels"] = prediction.adata.obs["majority_voting"]
+        else:
+            st.error("Could not find predicted labels in CellTypist output.")
+            st.stop()
 
         st.success(f"✅ CellTypist annotation complete using {model_choice}")
         st.session_state["adata"] = adata
@@ -93,7 +111,7 @@ try:
             color="predicted_labels",
             legend_loc="on data",
             show=False,
-            use_raw=False  # FIX: don't look in raw
+            use_raw=False
         )
         fig = plt.gcf()
         st.pyplot(fig)
