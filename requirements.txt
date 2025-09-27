@@ -1,7 +1,8 @@
 streamlit
 scanpy
 matplotlib
-pandas
 seaborn
+pandas
 python-igraph
 leidenalg
+celltypist
