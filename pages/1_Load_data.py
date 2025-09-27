@@ -19,7 +19,7 @@ if option == "Upload file (.h5ad)":
     if uploaded_file:
         try:
             adata = sc.read_h5ad(uploaded_file)
-            st.success(f"✅ Data loaded from .h5ad! Shape: {adata.shape}")
+            st.success(f"✅ Data loaded from .h5ad!")
         except Exception as e:
             st.error(f"❌ Error reading .h5ad: {e}")
 
@@ -42,7 +42,7 @@ elif option == "Upload 10X files (matrix + genes/features + barcodes)":
 
                 # Read using scanpy
                 adata = sc.read_10x_mtx(tmpdir, var_names="gene_symbols", cache=True)
-                st.success(f"✅ Data loaded from 10X files! Shape: {adata.shape}")
+                st.success(f"✅ Data loaded from 10X files!")
 
             except Exception as e:
                 st.error(f"❌ Error reading 10X files: {e}")
@@ -51,7 +51,7 @@ elif option == "Upload 10X files (matrix + genes/features + barcodes)":
 elif option == "Use Demo Data":
     try:
         adata = sc.read_10x_mtx("data", var_names="gene_symbols", cache=True)
-        st.success(f"✅ Demo data loaded! Shape: {adata.shape}")
+        st.success(f"✅ Demo data loaded!")
     except Exception as e:
         st.error(f"❌ Could not load demo dataset: {e}")
 
