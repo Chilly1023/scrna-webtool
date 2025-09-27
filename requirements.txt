@@ -1,6 +1,7 @@
 streamlit
 scanpy
 matplotlib
-seaborn
 pandas
-numpy
+seaborn
+python-igraph
+leidenalg
