@@ -20,7 +20,12 @@ n_pcs = st.number_input(
 )
 
 if st.button("Run neighbors"):
+    wait_msg = st.empty()
+    wait_msg.info("⏳ Please wait a moment while computing neighbors...")
+
     sc.pp.neighbors(adata, n_pcs=int(n_pcs))
+
+    wait_msg.empty()
     st.success(f"✅ Nearest-neighbor graph computed (using {n_pcs} PCs).")
     st.session_state["adata"] = adata
 
