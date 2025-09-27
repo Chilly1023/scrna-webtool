@@ -2,7 +2,9 @@
 
 This project is part of my **PhD coursework**, where I am developing an interactive [Streamlit](https://streamlit.io/) app for processing **single-cell RNA-seq (scRNA-seq) data**.
 
-The tool is inspired by workflows from the [Seurat PBMC3k tutorial](https://satijalab.org/seurat/articles/pbmc3k_tutorial) and allows users to perform essential scRNA-seq analysis **step by step** through a simple web interface.
+The tool is inspired by workflows from the [Seurat PBMC3k tutorial](https://satijalab.org/seurat/articles/pbmc3k_tutorial) from satijalab and allows users to perform essential scRNA-seq analysis **step by step** through a simple web interface.
+
+> ⚡ This project was created with the help of **ChatGPT-5** (OpenAI), for guidance on code structure, deployment, and documentation.
 
 ---
 
@@ -29,7 +31,7 @@ You can start analysis in three ways:
 3. **Use Demo Data**  
    - PBMC3k dataset from 10X Genomics  
    - Download link: [pbmc3k_filtered_gene_bc_matrices.tar.gz](https://cf.10xgenomics.com/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz)  
-   - This dataset is already included in the `data/` folder for quick testing
+   - Already included in the `data/` folder for quick testing
 
 ---
 
