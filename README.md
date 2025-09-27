@@ -4,12 +4,12 @@ This project is part of my **PhD coursework**, where I am developing an interact
 
 The tool is inspired by workflows from the [Seurat PBMC3k tutorial](https://satijalab.org/seurat/articles/pbmc3k_tutorial) from satijalab and allows users to perform essential scRNA-seq analysis **step by step** through a simple web interface.
 
-> ⚡ This project was created with the help of **ChatGPT-5** (OpenAI), for guidance on code structure, deployment, and documentation.
+> This project was created with the help of **ChatGPT-5** (OpenAI), for guidance on code structure, deployment, and documentation.
 
 ---
 
 ## Try it out
-👉 [Launch the webtool here](https://yirongdai-scrna-webtool-home-j2ukrh.streamlit.app/)  
+[Launch the webtool here](https://yirongdai-scrna-webtool-home-j2ukrh.streamlit.app/)  
 *(replace with your actual Streamlit link after deployment)*
 
 ---
