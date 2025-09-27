@@ -36,14 +36,13 @@ elif option == "Upload 10X files (matrix + genes/features + barcodes) and genera
             try:
                 # Decide target filenames  (support v2 genes.tsv or v3 features.tsv)
                 mtx_name = "matrix.mtx.gz" if matrix_file.name.endswith(".gz") else "matrix.mtx"
-                # If user provided features.tsv(.gz) keep that name; if genes.tsv keep genes.tsv
                 if genes_file.name.endswith(".gz"):
                     feat_name = "features.tsv.gz" if "features" in genes_file.name else "genes.tsv.gz"
                 else:
                     feat_name = "features.tsv" if "features" in genes_file.name else "genes.tsv"
                 bar_name = "barcodes.tsv.gz" if barcodes_file.name.endswith(".gz") else "barcodes.tsv"
 
-                # Save uploaded files into temp dir with expected names
+                # Save uploaded files
                 with open(os.path.join(tmpdir, mtx_name), "wb") as f:
                     f.write(matrix_file.read())
                 with open(os.path.join(tmpdir, feat_name), "wb") as f:
@@ -51,7 +50,7 @@ elif option == "Upload 10X files (matrix + genes/features + barcodes) and genera
                 with open(os.path.join(tmpdir, bar_name), "wb") as f:
                     f.write(barcodes_file.read())
 
-                # Try reading with gene symbols first; if it fails, fall back to gene_ids
+                # Read using scanpy
                 try:
                     adata = sc.read_10x_mtx(tmpdir, var_names="gene_symbols", cache=False)
                 except Exception:
@@ -59,17 +58,22 @@ elif option == "Upload 10X files (matrix + genes/features + barcodes) and genera
 
                 st.success("✅ Data loaded from 10X files!")
 
-                # Save AnnData object into memory buffer for download
-                buffer = io.BytesIO()
-                adata.write_h5ad(buffer)
-                buffer.seek(0)
+                # Save AnnData object to a temp .h5ad file
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".h5ad") as tmp_h5:
+                    adata.write_h5ad(tmp_h5.name)
+                    tmp_path = tmp_h5.name
 
-                st.download_button(
-                    label="💾 Download as .h5ad",
-                    data=buffer,
-                    file_name="uploaded_data.h5ad",
-                    mime="application/octet-stream"
-                )
+                # Provide download button
+                with open(tmp_path, "rb") as f:
+                    st.download_button(
+                        label="💾 Download as .h5ad",
+                        data=f,
+                        file_name="uploaded_data.h5ad",
+                        mime="application/octet-stream"
+                    )
+
+                # Clean up temp file
+                os.remove(tmp_path)
 
             except Exception as e:
                 st.error(f"❌ Error reading 10X files: {e}")
