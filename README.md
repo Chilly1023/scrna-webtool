@@ -10,7 +10,6 @@ The tool is inspired by workflows from the [Seurat PBMC3k tutorial](https://sati
 
 ## Try it out
 [Launch the webtool here](https://yirongdai-scrna-webtool-home-j2ukrh.streamlit.app/)  
-*(replace with your actual Streamlit link after deployment)*
 
 ---
 
