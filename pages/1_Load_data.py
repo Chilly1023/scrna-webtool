@@ -26,7 +26,6 @@ if option == "Upload file (.h5ad)":
             st.error(f"❌ Error reading .h5ad: {e}")
 
 # 2. Upload 10X files individually
-# 2. Upload 10X files individually
 elif option == "Upload 10X files (matrix + genes/features + barcodes)":
     matrix_file   = st.file_uploader("Upload matrix.mtx / matrix.mtx.gz", type=["mtx", "gz"])
     genes_file    = st.file_uploader("Upload genes.tsv / features.tsv.gz", type=["tsv", "gz"])
@@ -43,29 +42,25 @@ elif option == "Upload 10X files (matrix + genes/features + barcodes)":
                 with open(os.path.join(tmpdir, "barcodes.tsv.gz" if barcodes_file.name.endswith(".gz") else "barcodes.tsv"), "wb") as f:
                     f.write(barcodes_file.read())
 
-                # Load with Scanpy
+                # Read using scanpy
                 adata = sc.read_10x_mtx(tmpdir, var_names="gene_symbols", cache=True)
                 st.success("✅ Data loaded from 10X files!")
 
-                # Save AnnData to temporary .h5ad file
-                tmp_h5ad = os.path.join(tmpdir, "uploaded_data.h5ad")
-                adata.write_h5ad(tmp_h5ad)
-
-                # Read file back into memory for download
-                with open(tmp_h5ad, "rb") as f:
-                    h5ad_bytes = f.read()
+                # Save AnnData object into memory buffer
+                buffer = io.BytesIO()
+                adata.write_h5ad(buffer)
+                buffer.seek(0)
 
                 # Provide download button
                 st.download_button(
                     label="💾 Download as .h5ad",
-                    data=h5ad_bytes,
+                    data=buffer,
                     file_name="uploaded_data.h5ad",
                     mime="application/octet-stream"
                 )
 
             except Exception as e:
                 st.error(f"❌ Error reading 10X files: {e}")
-
 
 # 3. Use demo data (your raw 10X files in data/)
 elif option == "Use Demo Data":
