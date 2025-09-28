@@ -1,5 +1,4 @@
 import streamlit as st
-
 st.title("🧬 scRNA-seq Analysis Webtool")
 
 st.markdown("""
@@ -16,23 +15,21 @@ The tool is inspired by:
 
 ## 🚀 Workflow Overview
 
-You can explore your single-cell dataset using the following steps:
+You can explore your single-cell dataset in **six main steps**:
 
-1. **Load Data** – Upload `.h5ad` or raw 10X files, or use demo PBMC3k data  
-2. **QC Filtering** – Remove low-quality cells and high-mitochondrial content  
-3. **Normalisation & Feature Selection** – Log-normalisation and HVG selection  
-4. **Linear Dimensional Reduction** – PCA to capture major variance  
-5. **Clustering** – Leiden/Louvain clustering on the neighborhood graph  
-6. **Non-linear Dimensional Reduction** – UMAP for 2D visualization  
-7. **DEGs** – Identify marker genes for each cluster  
-8. **Assign Cell Type Identity** – Annotate clusters based on known markers  
+1. **📂 Load Data** – Upload `.h5ad` files, raw 10X input, or use the included PBMC3k demo dataset.  
+2. **🔧 Preprocessing** – Perform quality control (QC), normalization, selection of highly variable genes (HVGs), and scaling.  
+3. **📉 Linear Dimensional Reduction (PCA)** – Reduce dimensionality to highlight major sources of variation and prepare for clustering.  
+4. **🔗 Clustering & UMAP** – Group cells into clusters (Leiden algorithm) and visualize them in 2D with UMAP.  
+5. **🧬 Differential Expression (Marker Genes)** – Identify genes that distinguish clusters and explore them with violin plots.  
+6. **🧭 Gene Expression & Cell Type Annotation** – Visualize gene expression on UMAP, automatically detect cluster markers, and annotate clusters using CellTypist.  
 
 ---
 
 ## 📦 Data Input Options
-- Upload `.h5ad` file (recommended for large datasets)  
-- Upload **raw 10X files** (`matrix.mtx`, `genes.tsv/features.tsv`, `barcodes.tsv`) → auto-converts to `.h5ad`  
-- Use included **PBMC3k demo dataset**  
+- Upload `.h5ad` file (recommended for large datasets).  
+- Upload **raw 10X files** (`matrix.mtx`, `genes.tsv/features.tsv`, `barcodes.tsv`) → auto-converts to `.h5ad`.  
+- Use included **PBMC3k demo dataset**.  
 
 ---
 

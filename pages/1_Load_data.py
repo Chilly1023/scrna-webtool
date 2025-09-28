@@ -3,12 +3,15 @@ import scanpy as sc
 import tempfile, os, io
 import pandas as pd
 
-st.header("Step 1: Load Data")
+# st.set_page_config(page_title="Load Data", page_icon="📂")
 
-option = st.radio(
+# --- Sidebar controls ---
+st.sidebar.header("Step 1: Load Data 📂")
+
+option = st.sidebar.radio(
     "Choose how to load your data:",
-    ["Upload file (.h5ad)", 
-     "Upload 10X files (matrix + genes/features + barcodes) and generate .h5ad file", 
+    ["Upload files (.h5ad)", 
+     "Upload 10X files (matrix + genes/features + barcodes)", 
      "Use Demo Data"],
     index=2
 )
@@ -16,75 +19,108 @@ option = st.radio(
 adata = None
 
 # 1. Upload h5ad
-if option == "Upload file (.h5ad)":
-    uploaded_file = st.file_uploader("Upload your .h5ad file", type=["h5ad"])
-    if uploaded_file:
+if option == "Upload files (.h5ad)":
+    uploaded_files = st.sidebar.file_uploader(
+        "Upload one or more .h5ad files",
+        type=["h5ad"],
+        accept_multiple_files=True
+    )
+    if uploaded_files:
+        adata_list = []
+        for f in uploaded_files:
+            try:
+                adata_temp = sc.read_h5ad(io.BytesIO(f.read()))
+                adata_list.append(adata_temp)
+                st.sidebar.success(f"✅ Loaded {f.name} successfully!")
+            except Exception as e:
+                st.sidebar.error(f"❌ Failed to load {f.name}: {e}")
+
+        # Merge if multiple
         try:
-            adata = sc.read_h5ad(uploaded_file)
-            st.success("✅ Data loaded from .h5ad!")
+            if len(adata_list) == 1:
+                adata = adata_list[0]
+            else:
+                adata = adata_list[0].concatenate(*adata_list[1:], batch_key="batch")
+                st.sidebar.success("✅ Multiple .h5ad files merged into one AnnData object with `batch` column.")
         except Exception as e:
-            st.error(f"❌ Error reading .h5ad: {e}")
+            st.sidebar.error(f"❌ Failed to merge .h5ad files: {e}")
+
 
 # 2. Upload 10X files individually
-elif option == "Upload 10X files (matrix + genes/features + barcodes) and generate .h5ad file":
-    matrix_file   = st.file_uploader("Upload matrix.mtx / matrix.mtx.gz", type=["mtx", "gz"])
-    genes_file    = st.file_uploader("Upload genes.tsv / features.tsv(.gz)", type=["tsv", "gz"])
-    barcodes_file = st.file_uploader("Upload barcodes.tsv / barcodes.tsv.gz", type=["tsv", "gz"])
+elif option == "Upload 10X files (matrix + genes/features + barcodes)":
+    uploaded_files = st.sidebar.file_uploader(
+        "Upload your 10X files (matrix.mtx + genes.tsv/features.tsv + barcodes.tsv)",
+        type=["mtx", "tsv", "gz"],
+        accept_multiple_files=True
+    )
 
-    if matrix_file and genes_file and barcodes_file:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            try:
-                # Decide target filenames  (support v2 genes.tsv or v3 features.tsv)
-                mtx_name = "matrix.mtx.gz" if matrix_file.name.endswith(".gz") else "matrix.mtx"
-                if genes_file.name.endswith(".gz"):
-                    feat_name = "features.tsv.gz" if "features" in genes_file.name else "genes.tsv.gz"
-                else:
-                    feat_name = "features.tsv" if "features" in genes_file.name else "genes.tsv"
-                bar_name = "barcodes.tsv.gz" if barcodes_file.name.endswith(".gz") else "barcodes.tsv"
+    if uploaded_files:
+        # classify by name
+        mtx_file = next((f for f in uploaded_files if f.name.endswith(".mtx") or f.name.endswith(".mtx.gz")), None)
+        genes_file = next((f for f in uploaded_files if "genes" in f.name or "features" in f.name), None)
+        barcodes_file = next((f for f in uploaded_files if "barcodes" in f.name), None)
 
-                # Save uploaded files
-                with open(os.path.join(tmpdir, mtx_name), "wb") as f:
-                    f.write(matrix_file.read())
-                with open(os.path.join(tmpdir, feat_name), "wb") as f:
-                    f.write(genes_file.read())
-                with open(os.path.join(tmpdir, bar_name), "wb") as f:
-                    f.write(barcodes_file.read())
-
-                # Read using scanpy
+        if mtx_file and genes_file and barcodes_file:
+            with tempfile.TemporaryDirectory() as tmpdir:
                 try:
-                    adata = sc.read_10x_mtx(tmpdir, var_names="gene_symbols", cache=False)
-                except Exception:
-                    adata = sc.read_10x_mtx(tmpdir, var_names="gene_ids", cache=False)
+                    # Decide target filenames
+                    mtx_name = "matrix.mtx.gz" if mtx_file.name.endswith(".gz") else "matrix.mtx"
+                    if genes_file.name.endswith(".gz"):
+                        feat_name = "features.tsv.gz" if "features" in genes_file.name else "genes.tsv.gz"
+                    else:
+                        feat_name = "features.tsv" if "features" in genes_file.name else "genes.tsv"
+                    bar_name = "barcodes.tsv.gz" if barcodes_file.name.endswith(".gz") else "barcodes.tsv"
 
-                st.success("✅ Data loaded from 10X files!")
+                    # Save files
+                    for f, fname in [(mtx_file, mtx_name), (genes_file, feat_name), (barcodes_file, bar_name)]:
+                        with open(os.path.join(tmpdir, fname), "wb") as out_f:
+                            out_f.write(f.read())
 
-                # Save AnnData object to a temp .h5ad file
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".h5ad") as tmp_h5:
-                    adata.write_h5ad(tmp_h5.name)
-                    tmp_path = tmp_h5.name
+                    # Read with Scanpy
+                    try:
+                        adata = sc.read_10x_mtx(tmpdir, var_names="gene_symbols", cache=False)
+                    except Exception:
+                        adata = sc.read_10x_mtx(tmpdir, var_names="gene_ids", cache=False)
 
-                # Provide download button
-                with open(tmp_path, "rb") as f:
-                    st.download_button(
-                        label="💾 Download as .h5ad",
-                        data=f,
-                        file_name="uploaded_data.h5ad",
-                        mime="application/octet-stream"
-                    )
+                    st.sidebar.success("✅ Data loaded from 10X files!")
 
-                # Clean up temp file
-                os.remove(tmp_path)
+                except Exception as e:
+                    st.sidebar.error(f"❌ Error reading 10X files: {e}")
 
-            except Exception as e:
-                st.error(f"❌ Error reading 10X files: {e}")
-
-# 3. Use demo data (your raw 10X files in data/)
+# 3. Use demo data (make relative path robust)
 elif option == "Use Demo Data":
     try:
-        adata = sc.read_10x_mtx("data", var_names="gene_symbols", cache=True)
-        st.success("✅ Demo data loaded!")
+        adata = sc.datasets.pbmc3k()  # raw counts
+        st.session_state["adata"] = adata
+        st.sidebar.success("✅ Demo data loaded (PBMC 3k)!")
     except Exception as e:
-        st.error(f"❌ Could not load demo dataset: {e}")
+        st.sidebar.error(f"❌ Could not load demo dataset: {e}")
+
+
+# --- Main page explanation ---
+st.title("📂 Load your data here!")
+
+st.markdown("""
+Welcome to the **data loading step** of the scRNA-seq Webtool!  
+Here you can choose one of three options to bring your dataset into the analysis pipeline:
+
+### 🔹 Option 1: Upload `.h5ad` files
+- `.h5ad` is the native **AnnData format** used in Scanpy.  
+- It can store not only the raw count matrix, but also preprocessing results (QC, normalization), embeddings (PCA/UMAP), clustering, and annotations.  
+- If you upload a **single `.h5ad` file**, it will be loaded as is.  
+- If you upload **multiple `.h5ad` files**, the tool will automatically **merge them** into one AnnData object and add a new column `batch` in `adata.obs` to track the origin of each cell.
+
+### 🔹 Option 2: Upload 10X Genomics raw files
+- Standard **Cell Ranger** outputs:  
+  - `matrix.mtx` : sparse count matrix (genes × cells)  
+  - `genes.tsv` or `features.tsv` : gene information  
+  - `barcodes.tsv` : cell identifiers  
+- Please select **all three files at once** (hold `Ctrl`/`Cmd` or `Shift` when selecting).  
+
+### 🔹 Option 3: Use Demo Dataset
+- Built-in **PBMC 3k dataset** (~2,700 peripheral blood mononuclear cells from 10X Genomics).  
+- Perfect for learning and testing the workflow.  
+""")
 
 # Store and preview
 if adata is not None:
