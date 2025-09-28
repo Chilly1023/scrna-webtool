@@ -32,7 +32,6 @@ st.markdown("""
 You can explore how genes are expressed across clusters using different visualization methods:  
 - **UMAP** → shows spatial patterns of gene expression in 2D.  
 - **Violin plots** → shows the **distribution** of expression across clusters.  
-- **Table of marker genes** → shows ranked results with statistics.  
 """)
 
 # 提示常用 marker
