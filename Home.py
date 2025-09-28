@@ -21,7 +21,7 @@ You can explore your single-cell dataset in **six main steps**:
 2. **🔧 Preprocessing** – Perform quality control (QC), normalization, selection of highly variable genes (HVGs), and scaling.  
 3. **📉 Linear Dimensional Reduction (PCA)** – Reduce dimensionality to highlight major sources of variation and prepare for clustering.  
 4. **🔗 Clustering & UMAP** – Group cells into clusters (Leiden algorithm) and visualize them in 2D with UMAP.  
-5. **🧬 Differential Expression (Marker Genes)** – Identify genes that distinguish clusters and explore them with violin plots.  
+5. **🧬 Differential Expression (Marker Genes)** – Identify genes that distinguish clusters.  
 6. **🧭 Gene Expression & Cell Type Annotation** – Visualize gene expression on UMAP, automatically detect cluster markers, and annotate clusters using CellTypist.  
 
 ---
