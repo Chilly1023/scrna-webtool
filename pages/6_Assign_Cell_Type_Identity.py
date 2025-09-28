@@ -28,13 +28,19 @@ adata = st.session_state["adata"]
 # =========================================================
 st.subheader("📌 Step 1: Gene Expression Visualization")
 
-st.markdown("""
-You can explore how genes are expressed across clusters using different visualization methods:  
-- **UMAP** → shows spatial patterns of gene expression in 2D.  
-- **Violin plots** → shows the **distribution** of expression across clusters.  
-""")
+# Get available gene lists
+all_genes = list(adata.var_names)
+hvg_genes = list(adata.var[adata.var.get("highly_variable", False)].index)
 
-# 提示常用 marker
+gene_source = st.radio(
+    "Choose gene list:",
+    ["Highly variable genes", "All genes"],
+    index=0
+)
+
+gene_list = hvg_genes if gene_source == "Highly variable genes" and len(hvg_genes) > 0 else all_genes
+
+
 st.info("""
 💡 **Tip:** Marker genes highlight specific cell types. Common examples in PBMC:  
 - **CST3** → dendritic cell / monocyte marker  
@@ -44,10 +50,10 @@ st.info("""
 - **PPBP** → Platelet marker  
 """)
 
-# 默认 marker
+
 marker_genes = ["CST3", "NKG7", "PPBP"]
 
-# 选择基因
+
 selected_genes = st.multiselect(
     "Select one or more genes:",
     options=adata.var_names.tolist(),
@@ -55,7 +61,12 @@ selected_genes = st.multiselect(
     help="Choose genes to visualize"
 )
 
-# 选择图表类型
+st.markdown("""
+You can explore how genes are expressed across clusters using different visualization methods:  
+- **UMAP** → shows spatial patterns of gene expression in 2D.  
+- **Violin plots** → shows the **distribution** of expression across clusters.  
+""")
+
 plot_type = st.radio(
     "Choose visualization type:",
     ["UMAP", "Violin plots" ] #, "Marker gene table"]
