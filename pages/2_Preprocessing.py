@@ -238,34 +238,39 @@ elif submodule == "HVG Selection":
         save_and_download(adata, "hvg_data.h5ad", "Download HVG data (.h5ad)")
 
 
-    if st.session_state.get("hvg_done", False):
-        fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-        axes[0].scatter(
-            adata.var["means"][~adata.var["highly_variable"]],
-            adata.var["dispersions_norm"][~adata.var["highly_variable"]],
-            c="black", s=5, label="Other genes"
-        )
-        axes[0].scatter(
-            adata.var["means"][adata.var["highly_variable"]],
-            adata.var["dispersions_norm"][adata.var["highly_variable"]],
-            c="red", s=5, label="Highly variable genes"
-        )
-        axes[0].set_title("Normalized dispersion"); axes[0].legend(frameon=False)
+    # if st.session_state.get("hvg_done", False):
+    #     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    #     axes[0].scatter(
+    #         adata.var["means"][~adata.var["highly_variable"]],
+    #         adata.var["dispersions_norm"][~adata.var["highly_variable"]],
+    #         c="black", s=5, label="Other genes"
+    #     )
+    #     axes[0].scatter(
+    #         adata.var["means"][adata.var["highly_variable"]],
+    #         adata.var["dispersions_norm"][adata.var["highly_variable"]],
+    #         c="red", s=5, label="Highly variable genes"
+    #     )
+    #     axes[0].set_title("Normalized dispersion"); axes[0].legend(frameon=False)
 
-        axes[1].scatter(
-            adata.var["means"][~adata.var["highly_variable"]],
-            adata.var["dispersions"][~adata.var["highly_variable"]],
-            c="black", s=5
-        )
-        axes[1].scatter(
-            adata.var["means"][adata.var["highly_variable"]],
-            adata.var["dispersions"][adata.var["highly_variable"]],
-            c="red", s=5
-        )
-        axes[1].set_title("Raw dispersion")
-        st.pyplot(fig)
+    #     axes[1].scatter(
+    #         adata.var["means"][~adata.var["highly_variable"]],
+    #         adata.var["dispersions"][~adata.var["highly_variable"]],
+    #         c="black", s=5
+    #     )
+    #     axes[1].scatter(
+    #         adata.var["means"][adata.var["highly_variable"]],
+    #         adata.var["dispersions"][adata.var["highly_variable"]],
+    #         c="red", s=5
+    #     )
+    #     axes[1].set_title("Raw dispersion")
+    #     st.pyplot(fig)
 
-    
+        if st.session_state.get("hvg_done", False):
+            sc.pl.highly_variable_genes(adata, show=False)
+            fig = plt.gcf()
+            st.pyplot(fig)
+            plt.close(fig)
+
 
 # =========================================================
 # --- Scaling ---
