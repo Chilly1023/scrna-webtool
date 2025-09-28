@@ -2,6 +2,7 @@ import streamlit as st
 import scanpy as sc
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 st.title("🧭 Gene Expression and Cell Type Annotation")
 
@@ -28,15 +29,32 @@ adata = st.session_state["adata"]
 # =========================================================
 st.subheader("📌 Step 1: Gene Expression Visualization")
 
-# Get available gene lists
-all_genes = list(adata.var_names)
-hvg_genes = list(adata.var[adata.var.get("highly_variable", False)].index)
-
 gene_source = st.radio(
     "Choose gene list:",
     ["Highly variable genes", "All genes"],
     index=0
 )
+
+# Get available gene lists
+all_genes = adata.var_names.tolist()
+
+
+if "highly_variable" in adata.var.columns:
+    hvg_mask = adata.var["highly_variable"].to_numpy(dtype=bool)
+elif "highly_variable_nbatches" in adata.var.columns:  
+    hvg_mask = (adata.var["highly_variable_nbatches"] > 0).to_numpy(dtype=bool)
+else:
+    hvg_mask = np.zeros(adata.n_vars, dtype=bool)
+
+hvg_genes = adata.var_names[hvg_mask].tolist()
+
+
+gene_list = hvg_genes if (gene_source == "Highly variable genes" and len(hvg_genes) > 0) else all_genes
+if gene_source == "Highly variable genes" and len(hvg_genes) == 0:
+    st.warning("No HVG mask found on this AnnData; falling back to all genes.")
+
+
+
 
 gene_list = hvg_genes if gene_source == "Highly variable genes" and len(hvg_genes) > 0 else all_genes
 
