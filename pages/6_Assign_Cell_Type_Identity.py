@@ -67,17 +67,47 @@ selected_genes = st.multiselect(
     help="Choose from the list of genes to color cells on UMAP."
 )
 
-if st.button("Plot UMAP with selected genes"):
-    st.session_state["last_selected_genes"] = selected_genes
-    st.session_state["show_gene_umaps"] = True
 
-# Re-plot if previously requested
-if st.session_state.get("show_gene_umaps", False) and st.session_state.get("last_selected_genes"):
-    for gene in st.session_state["last_selected_genes"]:
-        sc.pl.umap(adata, color=gene, show=False, use_raw=False)
-        fig = plt.gcf()
-        st.pyplot(fig)
-        plt.close(fig)
+st.markdown("""
+You can explore how genes are expressed across clusters using different visualization methods:  
+- **UMAP** → shows spatial patterns of gene expression in 2D.  
+- **Violin plots** → shows the **distribution** of expression across clusters.  
+""")
+
+plot_type = st.radio(
+    "Choose visualization type:",
+    ["UMAP", "Violin plots" ] #, "Marker gene table"]
+)
+
+if st.button("Generate plots"):
+    if plot_type == "UMAP":
+        for gene in selected_genes:
+            st.subheader(f"UMAP: {gene}")
+            sc.pl.umap(adata, color=gene, show=False, use_raw=False)
+            fig = plt.gcf()
+            st.pyplot(fig)
+            plt.close(fig)
+
+    elif plot_type == "Violin plots":
+        for gene in selected_genes:
+            st.subheader(f"Violin plot: {gene}")
+            sc.pl.violin(adata, keys=gene, groupby="leiden", show=False)
+            fig = plt.gcf()
+            st.pyplot(fig)
+            plt.close(fig)
+
+
+# if st.button("Plot UMAP with selected genes"):
+#     st.session_state["last_selected_genes"] = selected_genes
+#     st.session_state["show_gene_umaps"] = True
+
+# # Re-plot if previously requested
+# if st.session_state.get("show_gene_umaps", False) and st.session_state.get("last_selected_genes"):
+#     for gene in st.session_state["last_selected_genes"]:
+#         sc.pl.umap(adata, color=gene, show=False, use_raw=False)
+#         fig = plt.gcf()
+#         st.pyplot(fig)
+#         plt.close(fig)
 
 # =========================================================
 # Part 2: Automatic Marker Gene Detection

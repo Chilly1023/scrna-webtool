@@ -17,9 +17,6 @@ The workflow includes:
 
 2. **Inspect marker genes** – view top ranked genes and their statistics (e.g., scores, fold-changes, adjusted p-values).  
 
-3. **Explore expression patterns** – visualize selected marker genes using **violin plots**,  
-   which show how strongly and consistently genes are expressed across clusters.  
-
 👉 Differentially expressed genes help us assign **biological meaning** to clusters.
 """)
 
@@ -147,55 +144,55 @@ if "rank_genes_groups" in adata.uns:
         mime="text/csv"
     )
 
-# =========================================================
-# --- Step 4: Explore marker genes with violin plots ---
-# =========================================================
-st.subheader("🎻 Step 3: Explore marker genes with violin plots")
+# # =========================================================
+# # --- Step 4: Explore marker genes with violin plots ---
+# # =========================================================
+# st.subheader("🎻 Step 3: Explore marker genes with violin plots")
 
-st.markdown("""
-Violin plots show the **distribution of expression levels** of selected genes across clusters:  
-- The **width** of the violin = number of cells at that expression level.  
-- The **height** = range of expression.  
-- This allows you to compare how a gene is expressed in different clusters.  
+# st.markdown("""
+# Violin plots show the **distribution of expression levels** of selected genes across clusters:  
+# - The **width** of the violin = number of cells at that expression level.  
+# - The **height** = range of expression.  
+# - This allows you to compare how a gene is expressed in different clusters.  
 
-👉 Useful for verifying whether a marker gene truly separates specific cell populations.
-""")
+# 👉 Useful for verifying whether a marker gene truly separates specific cell populations.
+# """)
 
-# 提示框，提供推荐 marker genes
-st.info("""
-💡 **Tip:** Try common marker genes in PBMC data:
-- **CST3** → dendritic cell / monocyte marker  
-- **NKG7** → NK cell / cytotoxic T cell marker  
-- **PPBP** → Platelet marker 
-- **MS4A1** → B cell marker  
-- **CD3D** → T cell marker  
+# # 提示框，提供推荐 marker genes
+# st.info("""
+# 💡 **Tip:** Try common marker genes in PBMC data:
+# - **CST3** → dendritic cell / monocyte marker  
+# - **NKG7** → NK cell / cytotoxic T cell marker  
+# - **PPBP** → Platelet marker 
+# - **MS4A1** → B cell marker  
+# - **CD3D** → T cell marker  
  
-""")
+# """)
 
-# Default marker list
-marker_genes = ["CST3", "NKG7", "PPBP"]
+# # Default marker list
+# marker_genes = ["CST3", "NKG7", "PPBP"]
 
-# Select genes
-violin_genes = st.multiselect(
-    "Select one or more genes for violin plot:",
-    options=adata.var_names.tolist(),
-    default=marker_genes,
-    help="Choose genes to visualize expression distributions across clusters."
-)
+# # Select genes
+# violin_genes = st.multiselect(
+#     "Select one or more genes for violin plot:",
+#     options=adata.var_names.tolist(),
+#     default=marker_genes,
+#     help="Choose genes to visualize expression distributions across clusters."
+# )
 
 
-if st.button("Plot violin plots"):
-    for gene in violin_genes:
-        st.subheader(f"Violin plot: {gene}")
-        sc.pl.violin(
-            adata,
-            keys=gene,
-            groupby="leiden",
-            show=False
-        )
-        fig = plt.gcf()
-        st.pyplot(fig)
-        plt.close(fig)
+# if st.button("Plot violin plots"):
+#     for gene in violin_genes:
+#         st.subheader(f"Violin plot: {gene}")
+#         sc.pl.violin(
+#             adata,
+#             keys=gene,
+#             groupby="leiden",
+#             show=False
+#         )
+#         fig = plt.gcf()
+#         st.pyplot(fig)
+#         plt.close(fig)
 
 
     # # =========================================================
