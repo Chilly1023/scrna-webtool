@@ -10,7 +10,7 @@ st.sidebar.header("Step 1: Load Data 📂")
 
 option = st.sidebar.radio(
     "Choose how to load your data:",
-    ["Upload files (.h5ad)", 
+    ["Upload files (.h5ad / .h5 / .loom)",
      "Upload 10X files (matrix + genes/features + barcodes)", 
      "Use Demo Data"],
     index=2
@@ -18,32 +18,48 @@ option = st.sidebar.radio(
 
 adata = None
 
-# 1. Upload h5ad
-if option == "Upload files (.h5ad)":
+# 1. Upload h5ad, h5, or loom
+if option == "Upload files (.h5ad / .h5 / .loom)":
     uploaded_files = st.sidebar.file_uploader(
-        "Upload one or more .h5ad files",
-        type=["h5ad"],
+        "Upload one or more files",
+        type=["h5ad", "h5", "loom"],
         accept_multiple_files=True
     )
+
     if uploaded_files:
         adata_list = []
-        for f in uploaded_files:
+        for uploaded_file in uploaded_files:
             try:
-                adata_temp = sc.read_h5ad(io.BytesIO(f.read()))
-                adata_list.append(adata_temp)
-                st.sidebar.success(f"✅ Loaded {f.name} successfully!")
-            except Exception as e:
-                st.sidebar.error(f"❌ Failed to load {f.name}: {e}")
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    tmp_path = os.path.join(tmpdir, uploaded_file.name)
+                    with open(tmp_path, "wb") as f:
+                        f.write(uploaded_file.read())
 
-        # Merge if multiple
-        try:
-            if len(adata_list) == 1:
-                adata = adata_list[0]
-            else:
+                    if uploaded_file.name.endswith(".h5ad"):
+                        adata_temp = sc.read_h5ad(tmp_path)
+                    elif uploaded_file.name.endswith(".loom"):
+                        adata_temp = sc.read_loom(tmp_path)
+                    elif uploaded_file.name.endswith(".h5"):
+                        adata_temp = sc.read_10x_h5(tmp_path)
+                    else:
+                        st.error("❌ Unsupported file type.")
+                        continue
+
+                    adata_list.append(adata_temp)
+                    st.success(f"✅ Loaded {uploaded_file.name}")
+
+            except Exception as e:
+                st.error(f"❌ Error reading {uploaded_file.name}: {e}")
+
+        # 合并逻辑
+        if len(adata_list) == 1:
+            adata = adata_list[0]
+        elif len(adata_list) > 1:
+            try:
                 adata = adata_list[0].concatenate(*adata_list[1:], batch_key="batch")
-                st.sidebar.success("✅ Multiple .h5ad files merged into one AnnData object with `batch` column.")
-        except Exception as e:
-            st.sidebar.error(f"❌ Failed to merge .h5ad files: {e}")
+                st.success("✅ Multiple files merged successfully with `batch` column.")
+            except Exception as e:
+                st.error(f"❌ Failed to merge files: {e}")
 
 
 # 2. Upload 10X files individually
@@ -104,12 +120,12 @@ st.markdown("""
 Welcome to the **data loading step** of the scRNA-seq Webtool!  
 Here you can choose one of three options to bring your dataset into the analysis pipeline:
 
-### 🔹 Option 1: Upload `.h5ad` files
-- `.h5ad` is the native **AnnData format** used in Scanpy.  
-- It can store not only the raw count matrix, but also preprocessing results (QC, normalization), embeddings (PCA/UMAP), clustering, and annotations.  
-- If you upload a **single `.h5ad` file**, it will be loaded as is.  
-- If you upload **multiple `.h5ad` files**, the tool will automatically **merge them** into one AnnData object and add a new column `batch` in `adata.obs` to track the origin of each cell.
-
+### 🔹 Option 1: Upload `.h5ad`, `.h5`, or `.loom` files
+- **`.h5ad`** : Native AnnData format used by Scanpy. Can store raw counts, preprocessing, embeddings, clustering, and annotations.  
+- **`.loom`** : Alternative matrix format (e.g., from tools like loompy). Supported for both single and multiple files. If multiple `.loom` files are uploaded, they will be **merged into one AnnData object** with a `batch` column to track origin.  
+- **`.h5`** : 10X Genomics HDF5 output (from Cell Ranger). Only one `.h5` file is typically used at a time.  
+- If you upload **multiple compatible files** (e.g., several `.h5ad` or `.loom`), they will be automatically **merged**.  
+            
 ### 🔹 Option 2: Upload 10X Genomics raw files
 - Standard **Cell Ranger** outputs:  
   - `matrix.mtx` : sparse count matrix (genes × cells)  

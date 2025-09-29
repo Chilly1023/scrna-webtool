@@ -17,7 +17,7 @@ The tool is inspired by:
 
 You can explore your single-cell dataset in **six main steps**:
 
-1. **📂 Load Data** – Upload `.h5ad` files, raw 10X input, or use the included PBMC3k demo dataset.  
+1. **📂 Load Data** – Upload `.h5/.h5ad/.loom` files, raw 10X input, or use the included PBMC3k demo dataset.  
 2. **🔧 Preprocessing** – Perform quality control (QC), normalization, selection of highly variable genes (HVGs), and scaling.  
 3. **📉 Linear Dimensional Reduction (PCA)** – Reduce dimensionality to highlight major sources of variation and prepare for clustering.  
 4. **🔗 Clustering & UMAP** – Group cells into clusters (Leiden algorithm) and visualize them in 2D with UMAP.  
@@ -27,7 +27,7 @@ You can explore your single-cell dataset in **six main steps**:
 ---
 
 ## 📦 Data Input Options
-- Upload `.h5ad` file (recommended for large datasets).  
+- Upload `.h5`, `.h5ad`, or `.loom` file (recommended for large datasets)   
 - Upload **raw 10X files** (`matrix.mtx`, `genes.tsv/features.tsv`, `barcodes.tsv`) → auto-converts to `.h5ad`.  
 - Use included **PBMC3k demo dataset**.  
 
