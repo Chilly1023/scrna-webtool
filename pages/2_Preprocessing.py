@@ -236,6 +236,9 @@ elif submodule == "HVG Selection":
         st.session_state["hvg_done"] = True
         st.success(f"✅ Identified top {n_top_genes} highly variable genes.")
         save_and_download(adata, "hvg_data.h5ad", "Download HVG data (.h5ad)")
+        wait_msg = st.empty()
+        wait_msg.info("⏳ Plotting HVG selection... please wait, this may take a few seconds.")
+
 
 
     if st.session_state.get("hvg_done", False):
