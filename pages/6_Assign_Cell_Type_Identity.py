@@ -2,7 +2,6 @@ import streamlit as st
 import scanpy as sc
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 
 st.title("🧭 Gene Expression and Cell Type Annotation")
 
@@ -25,104 +24,60 @@ if "adata" not in st.session_state:
 adata = st.session_state["adata"]
 
 # =========================================================
-# Part 1: Gene Expression Visualization
+# Part 1: Gene Expression on UMAP
 # =========================================================
-st.subheader("📌 Step 1: Gene Expression Visualization")
+st.subheader("📌 Step 1: Gene Expression on UMAP")
 
-gene_source = st.radio(
-    "Choose gene list:",
-    ["Highly variable genes", "All genes"],
-    index=0
-)
-
-# Get available gene lists
-all_genes = adata.var_names.tolist()
-
-
-if "highly_variable" in adata.var.columns:
-    hvg_mask = adata.var["highly_variable"].to_numpy(dtype=bool)
-elif "highly_variable_nbatches" in adata.var.columns:  
-    hvg_mask = (adata.var["highly_variable_nbatches"] > 0).to_numpy(dtype=bool)
-else:
-    hvg_mask = np.zeros(adata.n_vars, dtype=bool)
-
-hvg_genes = adata.var_names[hvg_mask].tolist()
-
-
-gene_list = hvg_genes if (gene_source == "Highly variable genes" and len(hvg_genes) > 0) else all_genes
-if gene_source == "Highly variable genes" and len(hvg_genes) == 0:
-    st.warning("No HVG mask found on this AnnData; falling back to all genes.")
-
-
-
-
-gene_list = hvg_genes if gene_source == "Highly variable genes" and len(hvg_genes) > 0 else all_genes
-
-
+# Marker gene tip
 st.info("""
-💡 **Tip:** Marker genes highlight specific cell types. Common examples in PBMC:  
+💡 **Tip:** Marker genes are genes whose expression highlights specific cell types.  
+Here are some commonly used marker genes in PBMC data:
+
 - **CST3** → dendritic cell / monocyte marker  
-- **NKG7** → NK / cytotoxic T cell marker  
+- **NKG7** → NK cell / cytotoxic T cell marker  
 - **MS4A1** → B cell marker  
 - **CD3D** → T cell marker  
 - **PPBP** → Platelet marker  
 """)
 
-
+# Default marker list
 marker_genes = ["CST3", "NKG7", "PPBP"]
 
+# Gene list source
+gene_source = st.radio(
+    "Choose gene list:",
+    ["Highly variable genes", "All genes"],
+    index=0,
+    help="""
+- **Highly variable genes (HVGs)**: Focus only on the most informative genes (faster, more concise list).  
+- **All genes**: Full list of genes in the dataset. Choose this if your marker gene is not in HVGs.  
+"""
+)
 
+# Build gene list
+all_genes = list(adata.var_names)
+hvg_genes = list(adata.var[adata.var.get("highly_variable", False)].index)
+gene_list = hvg_genes if gene_source == "Highly variable genes" and len(hvg_genes) > 0 else all_genes
+
+# Select genes
 selected_genes = st.multiselect(
-    "Select one or more genes:",
-    options=adata.var_names.tolist(),
+    "Select one or more genes to visualize:",
+    options=gene_list,
     default=marker_genes,
-    help="Choose genes to visualize"
+    help="Choose from the list of genes to color cells on UMAP."
 )
 
-st.markdown("""
-You can explore how genes are expressed across clusters using different visualization methods:  
-- **UMAP** → shows spatial patterns of gene expression in 2D.  
-- **Violin plots** → shows the **distribution** of expression across clusters.  
-""")
+if st.button("Plot UMAP with selected genes"):
+    st.session_state["last_selected_genes"] = selected_genes
+    st.session_state["show_gene_umaps"] = True
 
-plot_type = st.radio(
-    "Choose visualization type:",
-    ["UMAP", "Violin plots" ] #, "Marker gene table"]
-)
-
-if st.button("Generate plots"):
-    if plot_type == "UMAP":
-        for gene in selected_genes:
-            st.subheader(f"UMAP: {gene}")
-            sc.pl.umap(adata, color=gene, show=False, use_raw=False)
-            fig = plt.gcf()
-            st.pyplot(fig)
-            plt.close(fig)
-
-    elif plot_type == "Violin plots":
-        for gene in selected_genes:
-            st.subheader(f"Violin plot: {gene}")
-            sc.pl.violin(adata, keys=gene, groupby="leiden", show=False)
-            fig = plt.gcf()
-            st.pyplot(fig)
-            plt.close(fig)
-
-    # elif plot_type == "Marker gene table":
-    #     sc.tl.rank_genes_groups(adata, groupby="leiden", method="wilcoxon")
-    #     result = adata.uns["rank_genes_groups"]
-    #     groups = result["names"].dtype.names
-    #     dfs = []
-    #     for g in groups:
-    #         df = pd.DataFrame({
-    #             "names": result["names"][g][:10],
-    #             "scores": result["scores"][g][:10],
-    #             "logfoldchanges": result["logfoldchanges"][g][:10],
-    #             "pvals_adj": [f"{x:.2e}" for x in result["pvals_adj"][g][:10]]
-    #         })
-    #         df["cluster"] = g
-    #         dfs.append(df)
-    #     df_out = pd.concat(dfs)
-    #     st.dataframe(df_out)
+# Re-plot if previously requested
+if st.session_state.get("show_gene_umaps", False) and st.session_state.get("last_selected_genes"):
+    for gene in st.session_state["last_selected_genes"]:
+        sc.pl.umap(adata, color=gene, show=False, use_raw=False)
+        fig = plt.gcf()
+        st.pyplot(fig)
+        plt.close(fig)
 
 # =========================================================
 # Part 2: Automatic Marker Gene Detection
